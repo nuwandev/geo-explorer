@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Geo Explorer</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="assets/css/style.css" />
+  </head>
+  <body class="bg-gray-50 min-h-screen">
+    <!-- Search Section -->
+    <div class="container mx-auto px-4 py-8 relative">
+      <div class="max-w-4xl mx-auto mb-8 relative">
+        <div class="text-center mb-6">
+          <h1 class="text-4xl font-bold text-gray-900 mb-2">Geo Explorer</h1>
+          <p class="text-gray-600">
+            Discover detailed information about any geolocation
+          </p>
+        </div>
+        <div class="flex gap-3 bg-white rounded-lg shadow-md p-2">
+          <input
+            id="searchInput"
+            type="search"
+            placeholder="Enter City Name"
+            class="flex-1 px-4 py-3 focus:outline-none"
+          />
+        </div>
+        <ul
+          id="suggestionsList"
+          class="absolute bg-white shadow-md rounded-lg mt-1 w-full max-h-60 overflow-y-auto z-10"
+        >
+          <!-- <li onclick="handleSuggestionClick('New York, USA')">New York, USA</li> -->
+        </ul>
+      </div>
+
+      <div
+        id="emptyState"
+        class="flex flex-col items-center justify-center mt-32 text-gray-400 absolute w-full"
+      >
+        <p class="text-2xl italic mb-4 animate-fade-in">
+          Type to start exploring 🌍
+        </p>
+        <p class="text-sm">Enter a city name above to get started</p>
+      </div>
+
+      <div
+        id="loader"
+        class="flex justify-center mt-[100px] absolute w-full hidden"
+      >
+        <div class="loader"></div>
+      </div>
+
+      <div
+        id="notFoundState"
+        class="flex flex-col items-center justify-center mt-32 text-gray-400 absolute w-full hidden"
+      >
+        <p class="text-2xl italic mb-4 animate-fade-in">No results found</p>
+        <p class="text-sm">Try a different city name</p>
+      </div>
+
+      <!-- Weather Container -->
+
+      <div
+        id="informationContainer"
+        class="opacity-0 transition-all duration-500"
+      >
+        <div id="weatherContainer" class="max-w-4xl mx-auto mb-8">
+          <!-- Weather Card -->
+          <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <!-- Header -->
+            <div class="bg-linear-to-r from-sky-600 to-blue-700 p-8 text-white">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h2 id="locationName" class="text-4xl font-bold mb-2">
+                    {{LOCATION_NAME}}
+                  </h2>
+                  <p id="localTime" class="text-lg opacity-90">
+                    {{LOCAL_TIME}}
+                  </p>
+                </div>
+                <div class="flex items-center gap-4">
+                  <img
+                    id="weatherIcon"
+                    src=""
+                    alt="Weather Icon"
+                    class="w-20 h-20"
+                  />
+                  <div>
+                    <p id="conditionText" class="text-xl font-semibold">
+                      {{CONDITION_TEXT}}
+                    </p>
+                    <p id="tempC" class="text-5xl font-bold">{{TEMP_C}}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="p-8">
+              <!-- Quick Stats -->
+              <div class="grid md:grid-cols-4 gap-4 mb-8">
+                <div class="border border-gray-200 rounded-lg p-4 text-center">
+                  <p class="text-sm text-gray-600 mb-1">Feels Like</p>
+                  <p id="feelsLike" class="text-xl font-semibold text-gray-900">
+                    {{FEELS_LIKE}}
+                  </p>
+                </div>
+                <div class="border border-gray-200 rounded-lg p-4 text-center">
+                  <p class="text-sm text-gray-600 mb-1">Humidity</p>
+                  <p id="humidity" class="text-xl font-semibold text-gray-900">
+                    {{HUMIDITY}}
+                  </p>
+                </div>
+                <div class="border border-gray-200 rounded-lg p-4 text-center">
+                  <p class="text-sm text-gray-600 mb-1">Wind Speed</p>
+                  <p id="windKph" class="text-xl font-semibold text-gray-900">
+                    {{WIND_KPH}}
+                  </p>
+                </div>
+                <div class="border border-gray-200 rounded-lg p-4 text-center">
+                  <p class="text-sm text-gray-600 mb-1">UV Index</p>
+                  <p id="uv" class="text-xl font-semibold text-gray-900">
+                    {{UV_INDEX}}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Atmospheric Info -->
+              <section class="mb-8">
+                <h3
+                  class="text-xl font-bold text-gray-900 mb-4 pb-2 border-b-2 border-sky-600"
+                >
+                  Atmospheric Conditions
+                </h3>
+                <div class="grid md:grid-cols-3 gap-4">
+                  <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">Pressure</p>
+                    <p id="pressure" class="font-semibold text-gray-900">
+                      {{PRESSURE}}
+                    </p>
+                  </div>
+                  <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">Precipitation</p>
+                    <p id="precip" class="font-semibold text-gray-900">
+                      {{PRECIP}}
+                    </p>
+                  </div>
+                  <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">Cloud Coverage</p>
+                    <p id="cloud" class="font-semibold text-gray-900">
+                      {{CLOUD}}
+                    </p>
+                  </div>
+                  <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">Dew Point</p>
+                    <p id="dewpoint" class="font-semibold text-gray-900">
+                      {{DEW_POINT}}
+                    </p>
+                  </div>
+                  <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">Visibility</p>
+                    <p id="visibility" class="font-semibold text-gray-900">
+                      {{VISIBILITY}}
+                    </p>
+                  </div>
+                  <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">Wind Direction</p>
+                    <p id="windDir" class="font-semibold text-gray-900">
+                      {{WIND_DIR}}
+                    </p>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Solar Data -->
+              <section>
+                <h3
+                  class="text-xl font-bold text-gray-900 mb-4 pb-2 border-b-2 border-sky-600"
+                >
+                  Solar & Radiation
+                </h3>
+                <div class="grid md:grid-cols-3 gap-4">
+                  <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">
+                      Shortwave Radiation
+                    </p>
+                    <p id="shortRad" class="font-semibold text-gray-900">
+                      {{SHORTWAVE_RAD}}
+                    </p>
+                  </div>
+                  <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">Diffuse Radiation</p>
+                    <p id="diffRad" class="font-semibold text-gray-900">
+                      {{DIFFUSE_RAD}}
+                    </p>
+                  </div>
+                  <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">
+                      Global Tilted Irradiance
+                    </p>
+                    <p id="gti" class="font-semibold text-gray-900">{{GTI}}</p>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+
+        <!-- Country Details Container -->
+        <div id="countryContainer" class="max-w-4xl mx-auto">
+          <!-- Country Card -->
+          <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <!-- Header -->
+            <div class="bg-linear-to-r from-sky-600 to-blue-700 p-8 text-white">
+              <div class="flex items-start justify-between gap-6">
+                <div>
+                  <h2 id="countryName" class="text-4xl font-bold mb-2">
+                    {{COUNTRY_NAME}}
+                  </h2>
+                  <p id="countryOfficialName" class="text-lg opacity-90">
+                    {{COUNTRY_OFFICIAL_NAME}}
+                  </p>
+                </div>
+                <div id="countryFlag" class="text-7xl">{{FLAG_EMOJI}}</div>
+              </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="p-8">
+              <!-- Key Stats -->
+              <div class="grid md:grid-cols-4 gap-4 mb-8">
+                <div class="border border-gray-200 rounded-lg p-4">
+                  <p class="text-sm text-gray-600 mb-1">Capital</p>
+                  <p id="capital" class="text-lg font-semibold text-gray-900">
+                    {{CAPITAL}}
+                  </p>
+                </div>
+                <div class="border border-gray-200 rounded-lg p-4">
+                  <p class="text-sm text-gray-600 mb-1">Population</p>
+                  <p
+                    id="population"
+                    class="text-lg font-semibold text-gray-900"
+                  >
+                    {{POPULATION}}
+                  </p>
+                </div>
+                <div class="border border-gray-200 rounded-lg p-4">
+                  <p class="text-sm text-gray-600 mb-1">Area</p>
+                  <p id="area" class="text-lg font-semibold text-gray-900">
+                    {{AREA}}
+                  </p>
+                </div>
+                <div class="border border-gray-200 rounded-lg p-4">
+                  <p class="text-sm text-gray-600 mb-1">Region</p>
+                  <p id="region" class="text-lg font-semibold text-gray-900">
+                    {{REGION}}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Geographic Info -->
+              <section class="mb-8">
+                <h3
+                  class="text-xl font-bold text-gray-900 mb-4 pb-2 border-b-2 border-blue-600"
+                >
+                  Geographic Information
+                </h3>
+                <div class="grid md:grid-cols-3 gap-4">
+                  <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">Subregion</p>
+                    <p id="subregion" class="font-semibold text-gray-900">
+                      {{SUBREGION}}
+                    </p>
+                  </div>
+                  <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">Coordinates</p>
+                    <p id="coordinates" class="font-semibold text-gray-900">
+                      {{COORDINATES}}
+                    </p>
+                  </div>
+                  <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">Continents</p>
+                    <p id="continents" class="font-semibold text-gray-900">
+                      {{CONTINENT}}
+                    </p>
+                  </div>
+                  <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">Landlocked</p>
+                    <p id="landlocked" class="font-semibold text-gray-900">
+                      {{LANDLOCKED}}
+                    </p>
+                  </div>
+                  <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">Timezones</p>
+                    <p id="timezones" class="font-semibold text-gray-900">
+                      {{TIMEZONES}}
+                    </p>
+                  </div>
+                  <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">Gini Index</p>
+                    <p id="gini" class="font-semibold text-gray-900">
+                      {{GINI}}
+                    </p>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Languages & Currencies -->
+              <section class="mb-8">
+                <h3
+                  class="text-xl font-bold text-gray-900 mb-4 pb-2 border-b-2 border-blue-600"
+                >
+                  Languages & Currencies
+                </h3>
+                <div class="grid md:grid-cols-2 gap-6">
+                  <div class="bg-gray-50 p-6 rounded-lg">
+                    <h4 class="font-semibold text-gray-900 mb-3">Languages</h4>
+                    <div id="languages" class="space-y-2">
+                      <!-- JS inserts {{LANGUAGES}} -->
+                    </div>
+                  </div>
+                  <div class="bg-gray-50 p-6 rounded-lg">
+                    <h4 class="font-semibold text-gray-900 mb-3">Currencies</h4>
+                    <div id="currencies" class="space-y-2">
+                      <!-- JS inserts {{CURRENCIES}} -->
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Country Codes -->
+              <section class="mb-8">
+                <h3
+                  class="text-xl font-bold text-gray-900 mb-4 pb-2 border-b-2 border-blue-600"
+                >
+                  Country Codes & Identifiers
+                </h3>
+                <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
+                  <div
+                    class="bg-gray-50 p-4 rounded-lg text-center border border-gray-200"
+                  >
+                    <p class="text-xs text-gray-600 mb-1">ISO 2</p>
+                    <p id="cca2" class="text-2xl font-bold text-gray-900">
+                      {{CCA2}}
+                    </p>
+                  </div>
+                  <div
+                    class="bg-gray-50 p-4 rounded-lg text-center border border-gray-200"
+                  >
+                    <p class="text-xs text-gray-600 mb-1">ISO 3</p>
+                    <p id="cca3" class="text-2xl font-bold text-gray-900">
+                      {{CCA3}}
+                    </p>
+                  </div>
+                  <div
+                    class="bg-gray-50 p-4 rounded-lg text-center border border-gray-200"
+                  >
+                    <p class="text-xs text-gray-600 mb-1">Numeric</p>
+                    <p id="ccn3" class="text-2xl font-bold text-gray-900">
+                      {{CCN3}}
+                    </p>
+                  </div>
+                  <div
+                    class="bg-gray-50 p-4 rounded-lg text-center border border-gray-200"
+                  >
+                    <p class="text-xs text-gray-600 mb-1">CIOC</p>
+                    <p id="cioc" class="text-2xl font-bold text-gray-900">
+                      {{CIOC}}
+                    </p>
+                  </div>
+                  <div
+                    class="bg-gray-50 p-4 rounded-lg text-center border border-gray-200"
+                  >
+                    <p class="text-xs text-gray-600 mb-1">FIFA</p>
+                    <p id="fifa" class="text-2xl font-bold text-gray-900">
+                      {{FIFA}}
+                    </p>
+                  </div>
+                  <div
+                    class="bg-gray-50 p-4 rounded-lg text-center border border-gray-200"
+                  >
+                    <p class="text-xs text-gray-600 mb-1">Calling</p>
+                    <p
+                      id="callingCode"
+                      class="text-2xl font-bold text-gray-900"
+                    >
+                      {{CALLING_CODE}}
+                    </p>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Native Names -->
+              <section class="mb-8">
+                <h3
+                  class="text-xl font-bold text-gray-900 mb-4 pb-2 border-b-2 border-blue-600"
+                >
+                  Native Names
+                </h3>
+                <div id="nativeNames" class="grid md:grid-cols-2 gap-4">
+                  <!-- JS inserts {{NATIVE_NAMES}} -->
+                </div>
+              </section>
+
+              <!-- Additional Details -->
+              <section class="mb-8">
+                <h3
+                  class="text-xl font-bold text-gray-900 mb-4 pb-2 border-b-2 border-blue-600"
+                >
+                  Additional Details
+                </h3>
+                <div class="grid md:grid-cols-3 gap-4">
+                  <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">Top Level Domains</p>
+                    <p id="tld" class="font-semibold text-gray-900">{{TLD}}</p>
+                  </div>
+                  <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">Car Side</p>
+                    <p id="carSide" class="font-semibold text-gray-900">
+                      {{CAR_SIDE}}
+                    </p>
+                  </div>
+                  <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">Car Signs</p>
+                    <p id="carSigns" class="font-semibold text-gray-900">
+                      {{CAR_SIGNS}}
+                    </p>
+                  </div>
+                  <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">Week Starts</p>
+                    <p id="startOfWeek" class="font-semibold text-gray-900">
+                      {{START_OF_WEEK}}
+                    </p>
+                  </div>
+                  <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">Postal Code Format</p>
+                    <p id="postalCode" class="font-semibold text-gray-900">
+                      {{POSTAL_CODE}}
+                    </p>
+                  </div>
+                  <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">UN Member</p>
+                    <p id="unMember" class="font-semibold text-gray-900">
+                      {{UN_MEMBER}}
+                    </p>
+                  </div>
+                  <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">Independent</p>
+                    <p id="independent" class="font-semibold text-gray-900">
+                      {{INDEPENDENT}}
+                    </p>
+                  </div>
+                  <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">Status</p>
+                    <p id="status" class="font-semibold text-gray-900">
+                      {{STATUS}}
+                    </p>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Demonyms -->
+              <section class="mb-8">
+                <h3
+                  class="text-xl font-bold text-gray-900 mb-4 pb-2 border-b-2 border-blue-600"
+                >
+                  Demonyms
+                </h3>
+                <div id="demonyms" class="grid md:grid-cols-2 gap-4">
+                  <!-- JS inserts {{DEMONYMS}} -->
+                </div>
+              </section>
+
+              <!-- Alternative Spellings -->
+              <section class="mb-8">
+                <h3
+                  class="text-xl font-bold text-gray-900 mb-4 pb-2 border-b-2 border-blue-600"
+                >
+                  Alternative Spellings
+                </h3>
+                <div id="altSpellings" class="bg-gray-50 p-4 rounded-lg">
+                  {{ALT_SPELLINGS}}
+                </div>
+              </section>
+
+              <!-- Translations -->
+              <section class="mb-8">
+                <h3
+                  class="text-xl font-bold text-gray-900 mb-4 pb-2 border-b-2 border-blue-600"
+                >
+                  Country Name Translations
+                </h3>
+                <div
+                  id="translations"
+                  class="grid md:grid-cols-3 gap-3 max-h-96 overflow-y-auto"
+                >
+                  <!-- JS inserts {{TRANSLATIONS}} -->
+                </div>
+              </section>
+
+              <!-- Maps & Resources -->
+              <section>
+                <h3
+                  class="text-xl font-bold text-gray-900 mb-4 pb-2 border-b-2 border-blue-600"
+                >
+                  Maps & Resources
+                </h3>
+                <div class="grid md:grid-cols-2 gap-4">
+                  <a
+                    id="googleMaps"
+                    href="{{GOOGLE_MAPS_URL}}"
+                    target="_blank"
+                    class="block bg-blue-600 text-white p-6 rounded-lg hover:bg-blue-700 transition-colors text-center"
+                  >
+                    <p class="text-3xl mb-2">🗺️</p>
+                    <p class="font-semibold text-lg">Google Maps</p>
+                  </a>
+                  <a
+                    id="openStreetMap"
+                    href="{{OSM_URL}}"
+                    target="_blank"
+                    class="block bg-blue-600 text-white p-6 rounded-lg hover:bg-blue-700 transition-colors text-center"
+                  >
+                    <p class="text-3xl mb-2">🌐</p>
+                    <p class="font-semibold text-lg">OpenStreetMap</p>
+                  </a>
+                  <a
+                    id="flagImage"
+                    href="{{FLAG_IMAGE_URL}}"
+                    target="_blank"
+                    class="block bg-gray-700 text-white p-6 rounded-lg hover:bg-gray-800 transition-colors text-center"
+                  >
+                    <p class="text-3xl mb-2">🚩</p>
+                    <p class="font-semibold text-lg">View Flag Image</p>
+                  </a>
+                  <a
+                    id="coatOfArms"
+                    href="{{COAT_OF_ARMS_URL}}"
+                    target="_blank"
+                    class="block bg-gray-700 text-white p-6 rounded-lg hover:bg-gray-800 transition-colors text-center"
+                  >
+                    <p class="text-3xl mb-2">🛡️</p>
+                    <p class="font-semibold text-lg">Coat of Arms</p>
+                  </a>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="assets/js/app.js"></script>
+  </body>
+</html>
