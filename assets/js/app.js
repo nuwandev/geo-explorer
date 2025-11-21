@@ -5,21 +5,57 @@ const loader = document.getElementById("loader");
 const informationContainer = document.getElementById("informationContainer");
 const suggestionsList = document.getElementById("suggestionsList");
 
-document.addEventListener("DOMContentLoaded", () => {
-  if (navigator.geolocation) {
+document.addEventListener("DOMContentLoaded", async () => {
+  if (!navigator.geolocation) {
+    showEmptyStateUI();
+    return;
+  }
+  //  complete thatF
+  const permission = await navigator.permissions.query({ name: "geolocation" });
+
+  if (permission.state === "granted") {
+    showLoaderUI();
+
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        const latitude = position.coords.latitude;
-        const longitude = position.coords.longitude;
-        emptyState.classList.add("hidden");
+        const { latitude, longitude } = position.coords;
         handleSearch(`${latitude},${longitude}`);
       },
       (error) => {
-        console.log(error);
+        console.log("Unexpected error:", error);
+        showEmptyStateUI();
       }
     );
+  } else if (permission.state === "prompt") {
+    showEmptyStateUI();
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        showLoaderUI();
+        handleSearch(`${latitude},${longitude}`);
+      },
+      (error) => {
+        showEmptyStateUI();
+      }
+    );
+  } else if (permission.state === "denied") {
+    showEmptyStateUI();
   }
 });
+
+function showLoaderUI() {
+  emptyState.classList.add("hidden");
+  loader.classList.remove("hidden");
+  informationContainer.classList.add("opacity-0");
+  notFoundState.classList.add("hidden");
+}
+
+function showEmptyStateUI() {
+  emptyState.classList.remove("hidden");
+  loader.classList.add("hidden");
+  notFoundState.classList.add("hidden");
+}
 
 searchInput.addEventListener(
   "input",
