@@ -1,34 +1,94 @@
 # Geo Explorer
 
-Geo Explorer is a web application that provides detailed information about any geolocation.
+Multi-API mashup to discover city weather + country info + geolocation suggestions. Demonstrates async orchestration & UI state management.
 
-## Features
+## 🚀 Features
 
-- **Search**: Users can search for a city by name.
-- **Suggestions**: The application provides search suggestions as the user types.
-- **Weather Information**: Displays the current weather conditions for the searched location, including temperature, weather icon, and condition text.
-- **Location Details**: Shows the local time of the searched location.
-- **Responsive Design**: The application is designed to work on various screen sizes.
+- Live geolocation (auto-load on start if permitted)
+- Debounced search suggestions
+- Weather conditions & icon
+- Country metadata (from REST Countries)
+- Local time display
+- Empty / loading / not-found states
 
-## How to Use
+## 📂 Project Structure
 
-1. Open the `index.html` file in your web browser.
-2. Enter a city name in the search bar.
-3. Select a suggestion from the list or press Enter.
-4. The application will display the weather and location information for the selected city.
+```text
+geo-explorer/
+├── index.html
+├── assets/
+│   ├── css/style.css
+│   └── js/app.js
+└── README.md
+```
 
-## Project Structure
+## 🛠️ Tech Stack
 
-- `index.html`: The main HTML file containing the user interface.
-- `assets/css/style.css`: The stylesheet for the application.
-- `assets/js/`: This directory would contain the JavaScript logic for fetching data from APIs and updating the UI.
+- HTML / Tailwind (via CDN in index) + custom CSS
+- Vanilla JavaScript (ES modules style, but single file)
+- External APIs: WeatherAPI, Geoapify Autocomplete, REST Countries
+- Browser Geolocation API
+
+## ⚙️ Setup
+
+```bash
+git clone https://github.com/nuwandev/Internet-Technologies-Module-iCET.git
+cd Internet-Technologies-Module-iCET/projects/geo-explorer
+python -m http.server 8080
+```
+
+Navigate in browser.
+
+## 🧩 Usage
+
+1. Open page
+2. Allow location (optional) to auto-load
+3. Type a city name
+4. Pick a suggestion
+5. Read weather + country details
+
+## 🧱 Architecture
+
+- UI state toggled with utility DOM class adds/removes
+- Debounce wrapper around input handler
+- Sequential fetch chain (weather → country data)
+- Suggestion rendering separate from main info rendering
+
+## 🗄️ Data / Storage
+
+- No persistence; all ephemeral
+- APIs:
+  - `GET weatherapi.com/v1/current.json?key=...&q=<query>`
+  - `GET api.geoapify.com/v1/geocode/autocomplete?text=<text>&...`
+  - `GET restcountries.com/v3.1/name/<country>`
+- Geolocation: `navigator.geolocation.getCurrentPosition`
+
+## 🔧 Scripts
+
+None.
+
+## 🧪 Testing
+
+Manual: test slow network, invalid city, permission denied geolocation.
+
+## 📦 Deployment
+
+Static hosting (ensure API keys secured — current keys appear hard-coded).
+
+## 📝 Notes
+
+- Keys should move to serverless endpoint for production
+- No caching; repeated queries always refetch
+- Mobile scrolling for suggestions may need refinement
+
+## 📄 License
+
+MIT
 
 ## Learning Outcomes
 
-- **Multiple API Integration**: Learned to fetch data from multiple APIs (`weatherapi.com`, `restcountries.com`, `geoapify.com`) and combine the results.
-- **Asynchronous JavaScript**: Used `async/await` to handle asynchronous API calls.
-- **Geolocation API**: Used the browser's `navigator.geolocation` API to get the user's current position.
-- **Debouncing**: Implemented a debounce function to limit the rate at which API calls are made while the user is typing.
-- **DOM Manipulation**: Dynamically updated the UI with weather, location, and country information.
-- **Error Handling**: Used `try...catch` blocks to handle potential errors during API calls.
-- **Search Suggestions**: Implemented a search suggestion feature by fetching data from an autocomplete API.
+- Multi-API coordination
+- Debounce implementation
+- Geolocation usage
+- UI state management (empty/loading/not-found)
+- Async error handling patterns
